@@ -1,4 +1,4 @@
-package com.example.TicTacToe.controller.handler;
+package com.example.TicTacToe.handler;
 
 import com.example.TicTacToe.domain.exception.AuthenticationException;
 import org.springframework.http.ResponseEntity;

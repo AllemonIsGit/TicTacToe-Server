@@ -1,7 +1,8 @@
 package com.example.TicTacToe.config;
 
-import com.example.TicTacToe.domain.mapper.UserMapper;
-import com.example.TicTacToe.filter.CustomAuthenticationFilter;
+import com.example.TicTacToe.filter.JwtBasedAuthenticationFilter;
+import com.example.TicTacToe.filter.JwtBasedAuthorizationFilter;
+import com.example.TicTacToe.service.UserService;
 import com.example.TicTacToe.token.JWTTokenUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -17,21 +19,27 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final ObjectMapper objectMapper;
     private final JWTTokenUtil jwtTokenUtil;
+    private final UserService userService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.authorizeRequests()
                 .antMatchers("/api/v1/authentication/*")
-                    .permitAll()
+                .permitAll()
                 .anyRequest()
                 .authenticated();
         http.addFilterAt(getAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(getAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 
-    private CustomAuthenticationFilter getAuthenticationFilter() throws Exception {
-        CustomAuthenticationFilter filter = new CustomAuthenticationFilter(objectMapper, authenticationManager(), jwtTokenUtil);
+    private JwtBasedAuthenticationFilter getAuthenticationFilter() throws Exception {
+        JwtBasedAuthenticationFilter filter = new JwtBasedAuthenticationFilter(objectMapper, authenticationManager(), jwtTokenUtil);
         filter.setFilterProcessesUrl("/api/v1/authentication/login");
         return filter;
+    }
+    private JwtBasedAuthorizationFilter getAuthorizationFilter() throws Exception {
+        return new JwtBasedAuthorizationFilter(jwtTokenUtil, userService);
     }
 }

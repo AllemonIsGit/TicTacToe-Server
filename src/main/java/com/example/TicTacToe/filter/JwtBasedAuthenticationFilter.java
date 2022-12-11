@@ -24,7 +24,7 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 @Slf4j
-public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+public class JwtBasedAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final ObjectMapper objectMapper;
     private final AuthenticationManager authenticationManager;
     private final JWTTokenUtil jwtTokenUtil;
@@ -57,6 +57,4 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         super.unsuccessfulAuthentication(request, response, failed);
     }
-
-
 }
